@@ -56,15 +56,24 @@ function CodeEditor({
   return (
     <div
       className={twMerge(
-        "border border-border-primary overflow-hidden flex flex-col",
+        "border border-surface overflow-hidden flex flex-col",
         className,
       )}
     >
       {/* Window Header */}
-      <div className="flex items-center gap-2 h-10 px-4 border-b border-border-primary">
-        <span className="size-3 rounded-full bg-accent-red" />
-        <span className="size-3 rounded-full bg-accent-amber" />
-        <span className="size-3 rounded-full bg-accent-green" />
+      <div className="flex items-center gap-2 h-10 px-4 border-b border-surface">
+        {/* Mac traffic light buttons */}
+        <div className="flex items-center gap-2 group">
+          <span className="relative size-3 rounded-full bg-critical flex items-center justify-center">
+            <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[7px] leading-none font-bold text-red-950 select-none">×</span>
+          </span>
+          <span className="relative size-3 rounded-full bg-warning flex items-center justify-center">
+            <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[7px] leading-none font-bold text-amber-950 select-none">−</span>
+          </span>
+          <span className="relative size-3 rounded-full bg-accent flex items-center justify-center">
+            <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[7px] leading-none font-bold text-green-950 select-none">+</span>
+          </span>
+        </div>
         <span className="flex-1" />
 
         {/* Language selector */}
@@ -75,9 +84,9 @@ function CodeEditor({
               const val = e.target.value;
               onLanguageChange?.(val === "auto" ? null : val);
             }}
-            className="bg-transparent font-mono text-xs text-text-secondary outline-none cursor-pointer appearance-none hover:text-text-primary transition-colors pr-5"
+            className="bg-transparent font-mono text-xs text-muted outline-none cursor-pointer appearance-none hover:text-foreground transition-colors pr-5"
           >
-            <option value="auto" className="bg-bg-surface text-text-primary">
+            <option value="auto" className="bg-surface text-foreground">
               {displayLanguage
                 ? `${displayLanguage} (detected)`
                 : "auto-detect"}
@@ -86,25 +95,25 @@ function CodeEditor({
               <option
                 key={opt.value}
                 value={opt.value}
-                className="bg-bg-surface text-text-primary"
+                className="bg-surface text-foreground"
               >
                 {opt.label}
               </option>
             ))}
           </select>
-          <ChevronDown className="absolute right-0 size-3.5 text-text-tertiary pointer-events-none" />
+          <ChevronDown className="absolute right-0 size-3.5 text-muted pointer-events-none" />
         </div>
       </div>
 
       {/* Code Area */}
-      <div className="flex flex-1 bg-bg-input">
+      <div className="flex flex-1 bg-code-bg">
         {/* Line Numbers */}
-        <div className="flex flex-col items-end gap-0 py-4 px-3 w-12 border-r border-border-primary bg-bg-surface select-none">
+        <div className="flex flex-col items-end gap-0 py-4 px-3 w-12 border-r border-surface bg-surface select-none">
           {Array.from({ length: lineCount }, (_, i) => (
             <span
               // biome-ignore lint/suspicious/noArrayIndexKey: line numbers are index-based and never reorder
               key={i}
-              className="font-mono text-xs leading-[1.625] text-text-tertiary"
+              className="font-mono text-xs leading-[1.625] text-muted"
             >
               {i + 1}
             </span>
@@ -140,8 +149,8 @@ function CodeEditor({
             className={twMerge(
               "relative z-10 w-full h-full py-4 px-4 bg-transparent font-mono text-xs leading-[1.625] outline-none resize-none min-h-80 whitespace-pre overflow-auto [tab-size:2]",
               hasHighlight
-                ? "text-transparent caret-accent-green selection:bg-white/10"
-                : "text-text-primary placeholder:text-text-tertiary caret-accent-green",
+                ? "text-transparent caret-accent selection:bg-white/10"
+                : "text-foreground placeholder:text-muted caret-accent",
             )}
           />
         </div>

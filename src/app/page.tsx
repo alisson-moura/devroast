@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import Link from "next/link";
 import { useState } from "react";
 import { ActionsBar } from "@/components/actions-bar";
@@ -35,7 +35,7 @@ const LEADERBOARD = [
   },
 ];
 
-export default  function Home() {
+export default function Home() {
   const [code, setCode] = useState("");
   const [manualLanguage, setManualLanguage] = useState<string | null>(null);
   const { detectedLanguage } = useLanguageDetection(code);
