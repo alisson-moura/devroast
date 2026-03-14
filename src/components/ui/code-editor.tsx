@@ -1,5 +1,6 @@
 "use client";
 
+import { ScrollArea } from "@base-ui/react/scroll-area";
 import { ChevronDown } from "lucide-react";
 import { useCallback, useMemo, useRef } from "react";
 import { twMerge } from "tailwind-merge";
@@ -31,6 +32,7 @@ function CodeEditor({
 
   const lines = value.split("\n");
   const lineCount = Math.max(lines.length, 16);
+  const needsScroll = lines.length > 16;
 
   // Synchronous highlight — no debounce for instant feedback
   const highlightedHtml = useMemo(() => {
@@ -65,13 +67,19 @@ function CodeEditor({
         {/* Mac traffic light buttons */}
         <div className="flex items-center gap-2 group">
           <span className="relative size-3 rounded-full bg-critical flex items-center justify-center">
-            <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[7px] leading-none font-bold text-red-950 select-none">×</span>
+            <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[7px] leading-none font-bold text-red-950 select-none">
+              ×
+            </span>
           </span>
           <span className="relative size-3 rounded-full bg-warning flex items-center justify-center">
-            <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[7px] leading-none font-bold text-amber-950 select-none">−</span>
+            <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[7px] leading-none font-bold text-amber-950 select-none">
+              −
+            </span>
           </span>
           <span className="relative size-3 rounded-full bg-accent flex items-center justify-center">
-            <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[7px] leading-none font-bold text-green-950 select-none">+</span>
+            <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[7px] leading-none font-bold text-green-950 select-none">
+              +
+            </span>
           </span>
         </div>
         <span className="flex-1" />
@@ -106,55 +114,118 @@ function CodeEditor({
       </div>
 
       {/* Code Area */}
-      <div className="flex flex-1 bg-code-bg">
-        {/* Line Numbers */}
-        <div className="flex flex-col items-end gap-0 py-4 px-3 w-12 border-r border-surface bg-surface select-none">
-          {Array.from({ length: lineCount }, (_, i) => (
-            <span
-              // biome-ignore lint/suspicious/noArrayIndexKey: line numbers are index-based and never reorder
-              key={i}
-              className="font-mono text-xs leading-[1.625] text-muted"
-            >
-              {i + 1}
-            </span>
-          ))}
-        </div>
+      {needsScroll ? (
+        <ScrollArea.Root className="flex flex-1 bg-code-bg max-h-[344px]">
+          <ScrollArea.Viewport className="w-full">
+            <ScrollArea.Content className="flex w-full">
+              {/* Line Numbers */}
+              <div className="flex flex-col items-end gap-0 py-4 px-3 w-12 border-r border-surface bg-surface select-none">
+                {Array.from({ length: lineCount }, (_, i) => (
+                  <span
+                    // biome-ignore lint/suspicious/noArrayIndexKey: line numbers are index-based and never reorder
+                    key={i}
+                    className="font-mono text-xs leading-[1.625] text-muted"
+                  >
+                    {i + 1}
+                  </span>
+                ))}
+              </div>
 
-        {/* Editor overlay container */}
-        <div className="relative flex-1 min-h-80">
-          {/* Highlighted code (below) */}
-          {hasHighlight && (
-            <div
-              ref={highlightedRef}
-              aria-hidden="true"
-              className="absolute inset-0 py-4 px-4 font-mono text-xs leading-[1.625] overflow-hidden whitespace-pre pointer-events-none [tab-size:2] [&_pre]:!bg-transparent [&_pre]:!m-0 [&_pre]:!p-0 [&_code]:!bg-transparent [&_.line]:leading-[1.625]"
-              // biome-ignore lint/security/noDangerouslySetInnerHtml: shiki generates trusted HTML from code strings
-              dangerouslySetInnerHTML={{
-                __html: highlightedHtml,
-              }}
-            />
-          )}
+              {/* Editor overlay container */}
+              <div className="relative flex-1">
+                {/* Highlighted code (below) */}
+                {hasHighlight && (
+                  <div
+                    ref={highlightedRef}
+                    aria-hidden="true"
+                    className="absolute inset-0 py-4 px-4 font-mono text-xs leading-[1.625] overflow-hidden whitespace-pre pointer-events-none [tab-size:2] [&_pre]:!bg-transparent [&_pre]:!m-0 [&_pre]:!p-0 [&_code]:!bg-transparent [&_.line]:leading-[1.625]"
+                    // biome-ignore lint/security/noDangerouslySetInnerHtml: shiki generates trusted HTML from code strings
+                    dangerouslySetInnerHTML={{
+                      __html: highlightedHtml,
+                    }}
+                  />
+                )}
 
-          {/* Textarea (above, transparent text when highlight is active) */}
-          <textarea
-            ref={textareaRef}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            onScroll={handleScroll}
-            placeholder="// paste your code here..."
-            spellCheck={false}
-            autoCapitalize="off"
-            autoComplete="off"
-            autoCorrect="off"
-            className={twMerge(
-              "relative z-10 w-full h-full py-4 px-4 bg-transparent font-mono text-xs leading-[1.625] outline-none resize-none min-h-80 whitespace-pre overflow-auto [tab-size:2]",
-              hasHighlight
-                ? "text-transparent caret-accent selection:bg-white/10"
-                : "text-foreground placeholder:text-muted caret-accent",
+                {/* Textarea (above, transparent text when highlight is active) */}
+                <textarea
+                  ref={textareaRef}
+                  value={value}
+                  onChange={(e) => onChange(e.target.value)}
+                  onScroll={handleScroll}
+                  placeholder="// paste your code here..."
+                  spellCheck={false}
+                  autoCapitalize="off"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  className={twMerge(
+                    "relative z-10 w-full h-full py-4 px-4 bg-transparent font-mono text-xs leading-[1.625] outline-none resize-none min-h-80 whitespace-pre overflow-x-auto overflow-y-hidden [tab-size:2]",
+                    hasHighlight
+                      ? "text-transparent caret-accent selection:bg-white/10"
+                      : "text-foreground placeholder:text-muted caret-accent",
+                  )}
+                />
+              </div>
+            </ScrollArea.Content>
+          </ScrollArea.Viewport>
+
+          <ScrollArea.Scrollbar
+            orientation="vertical"
+            className="flex w-1.5 touch-none select-none p-px my-1"
+          >
+            <ScrollArea.Thumb className="relative flex-1 rounded-full bg-surface-hover transition-colors hover:bg-muted/50" />
+          </ScrollArea.Scrollbar>
+        </ScrollArea.Root>
+      ) : (
+        <div className="flex flex-1 bg-code-bg">
+          {/* Line Numbers */}
+          <div className="flex flex-col items-end gap-0 py-4 px-3 w-12 border-r border-surface bg-surface select-none">
+            {Array.from({ length: lineCount }, (_, i) => (
+              <span
+                // biome-ignore lint/suspicious/noArrayIndexKey: line numbers are index-based and never reorder
+                key={i}
+                className="font-mono text-xs leading-[1.625] text-muted"
+              >
+                {i + 1}
+              </span>
+            ))}
+          </div>
+
+          {/* Editor overlay container */}
+          <div className="relative flex-1 min-h-80">
+            {/* Highlighted code (below) */}
+            {hasHighlight && (
+              <div
+                ref={highlightedRef}
+                aria-hidden="true"
+                className="absolute inset-0 py-4 px-4 font-mono text-xs leading-[1.625] overflow-hidden whitespace-pre pointer-events-none [tab-size:2] [&_pre]:!bg-transparent [&_pre]:!m-0 [&_pre]:!p-0 [&_code]:!bg-transparent [&_.line]:leading-[1.625]"
+                // biome-ignore lint/security/noDangerouslySetInnerHtml: shiki generates trusted HTML from code strings
+                dangerouslySetInnerHTML={{
+                  __html: highlightedHtml,
+                }}
+              />
             )}
-          />
+
+            {/* Textarea (above, transparent text when highlight is active) */}
+            <textarea
+              ref={textareaRef}
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              onScroll={handleScroll}
+              placeholder="// paste your code here..."
+              spellCheck={false}
+              autoCapitalize="off"
+              autoComplete="off"
+              autoCorrect="off"
+              className={twMerge(
+                "relative z-10 w-full h-full py-4 px-4 bg-transparent font-mono text-xs leading-[1.625] outline-none resize-none min-h-80 whitespace-pre overflow-auto [tab-size:2]",
+                hasHighlight
+                  ? "text-transparent caret-accent selection:bg-white/10"
+                  : "text-foreground placeholder:text-muted caret-accent",
+              )}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
