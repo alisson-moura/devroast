@@ -1,11 +1,17 @@
 import type { Metadata } from "next";
-import { JetBrains_Mono } from "next/font/google";
+import { IBM_Plex_Mono, JetBrains_Mono } from "next/font/google";
 import { Navbar } from "@/components/ui/navbar";
 import "./globals.css";
 
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  variable: "--font-ibm-plex-mono",
+  subsets: ["latin"],
+  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
@@ -19,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${jetbrainsMono.variable} h-full antialiased`}>
+    <html lang="en" className={`${jetbrainsMono.variable} ${ibmPlexMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <Navbar />
         {children}
