@@ -1,11 +1,13 @@
 "use client";
 
 import { ScrollArea } from "@base-ui/react/scroll-area";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, TriangleAlert } from "lucide-react";
 import { useCallback, useMemo, useRef } from "react";
 import { twMerge } from "tailwind-merge";
 import { useShikiHighlighter } from "@/hooks/use-shiki-highlighter";
 import { LANGUAGE_OPTIONS, LANGUAGES } from "@/lib/languages";
+
+const DEFAULT_MAX_CHARS = 2000;
 
 type CodeEditorProps = {
   value: string;
@@ -13,6 +15,7 @@ type CodeEditorProps = {
   language: string | null;
   onLanguageChange?: (language: string | null) => void;
   className?: string;
+  maxChars?: number;
 };
 
 function CodeEditor({
@@ -21,6 +24,7 @@ function CodeEditor({
   language,
   onLanguageChange,
   className,
+  maxChars = DEFAULT_MAX_CHARS,
 }: CodeEditorProps) {
   const { highlight, isReady } = useShikiHighlighter();
   const highlightedRef = useRef<HTMLDivElement>(null);
@@ -45,6 +49,13 @@ function CodeEditor({
   // Show text visibly when highlight is not ready yet
   const hasHighlight = isReady && highlightedHtml.length > 0;
 
+  // Char limit
+  const charCount = value.length;
+  const percentage = charCount / maxChars;
+  const isWarning = percentage >= 0.8 && percentage <= 1;
+  const isExceeded = charCount > maxChars;
+  const remaining = maxChars - charCount;
+
   // Scroll sync
   const handleScroll = useCallback(() => {
     const textarea = textareaRef.current;
@@ -58,7 +69,8 @@ function CodeEditor({
   return (
     <div
       className={twMerge(
-        "border border-surface overflow-hidden flex flex-col",
+        "border overflow-hidden flex flex-col transition-colors duration-300",
+        isExceeded ? "border-critical/60" : "border-surface",
         className,
       )}
     >
@@ -226,6 +238,35 @@ function CodeEditor({
           </div>
         </div>
       )}
+
+      {/* Status Bar */}
+      <div
+        className={twMerge(
+          "flex items-center justify-end gap-1.5 h-6 px-3 border-t select-none transition-colors duration-300",
+          isExceeded
+            ? "border-critical/30 bg-critical/5"
+            : "border-surface bg-surface",
+        )}
+      >
+        {isExceeded && (
+          <span className="flex items-center gap-1 font-mono text-[10px] text-critical animate-pulse">
+            <TriangleAlert className="size-2.5" />
+            {Math.abs(remaining)} over limit
+          </span>
+        )}
+        <span
+          className={twMerge(
+            "font-mono text-[10px] tabular-nums transition-colors duration-300",
+            isExceeded
+              ? "text-critical font-semibold"
+              : isWarning
+                ? "text-warning"
+                : "text-muted",
+          )}
+        >
+          {charCount} / {maxChars}
+        </span>
+      </div>
     </div>
   );
 }

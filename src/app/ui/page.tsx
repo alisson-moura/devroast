@@ -147,23 +147,28 @@ export default async function UiShowcasePage() {
 
         <ShowcaseSection title="with filename">
           <div className="w-full max-w-2xl">
-            <CodeBlock
-              lang="typescript"
-              filename="roast.ts"
-              code={`async function roastCode(input: string): Promise<string> {
+            <CodeBlock>
+              <CodeBlock.Header filename="roast.ts" />
+              <CodeBlock.Content
+                lang="typescript"
+                code={`async function roastCode(input: string): Promise<string> {
   const issues = await analyze(input);
   return issues.map(i => i.message).join("\\n");
 }`}
-            />
+              />
+            </CodeBlock>
           </div>
         </ShowcaseSection>
 
         <ShowcaseSection title="without filename">
           <div className="w-full max-w-2xl">
-            <CodeBlock
-              lang="bash"
-              code={`$ pnpm dev\n> ready on http://localhost:3000`}
-            />
+            <CodeBlock>
+              <CodeBlock.Header />
+              <CodeBlock.Content
+                lang="bash"
+                code={`$ pnpm dev\n> ready on http://localhost:3000`}
+              />
+            </CodeBlock>
           </div>
         </ShowcaseSection>
       </div>
