@@ -2,6 +2,15 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Specs
+
+Quando o usuario pedir para comecar uma spec (ex: "cria uma spec para X", "faz a spec de Y"), siga o processo definido em `specs/spec-guide.md`:
+
+1. Leia o `spec-guide.md` antes de qualquer outra coisa.
+2. Faca as perguntas obrigatorias ao usuario antes de redigir.
+3. So comece a escrever a spec apos ter as respostas.
+4. Salve em `specs/<nome-kebab-case>.md`.
+
 ## Commands
 
 ```bash
