@@ -1,15 +1,10 @@
+"use client"
 import Link from "next/link";
+import { useState } from "react";
 import { ActionsBar } from "@/components/actions-bar";
 import { Badge } from "@/components/ui/badge";
-import { CodeBlock } from "@/components/ui/code-block";
-
-const MOCK_CODE = `function calculateTotal(items) {
-  let total = 0;
-  for (let i = 0; i <= items.length; i++) {
-    total = total + items[i].price * items[i].qty;
-  }
-  return total;
-}`;
+import { CodeEditor } from "@/components/ui/code-editor";
+import { useLanguageDetection } from "@/hooks/use-language-detection";
 
 const LEADERBOARD = [
   {
@@ -40,7 +35,13 @@ const LEADERBOARD = [
   },
 ];
 
-export default async function Home() {
+export default  function Home() {
+  const [code, setCode] = useState("");
+  const [manualLanguage, setManualLanguage] = useState<string | null>(null);
+  const { detectedLanguage } = useLanguageDetection(code);
+
+  const resolvedLanguage = manualLanguage ?? detectedLanguage;
+
   return (
     <main className="flex flex-col bg-background flex-1">
       <div className="mx-auto w-full max-w-[960px] px-10 py-20 flex flex-col gap-8">
@@ -57,7 +58,13 @@ export default async function Home() {
         </section>
 
         {/* Code Editor */}
-        <CodeBlock code={MOCK_CODE} lang="javascript" filename="your-code.js" />
+        <CodeEditor
+          value={code}
+          onChange={setCode}
+          language={resolvedLanguage}
+          onLanguageChange={setManualLanguage}
+          className="w-full max-w-3xl mx-auto"
+        />
 
         {/* Actions Bar */}
         <ActionsBar />
