@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { avg, count, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
@@ -61,6 +62,19 @@ export const appRouter = createTRPCRouter({
         avgScore: stats?.avgScore ? Number(stats.avgScore).toFixed(1) : "0.0",
         entries,
       };
+    }),
+  createRoast: baseProcedure
+    .input(
+      z.object({
+        code: z.string().min(1).max(2000),
+        language: z.string().nullable(),
+        roastMode: z.boolean(),
+      }),
+    )
+    .mutation(async ({ input: _input }) => {
+      // TODO: replace with real AI analysis + DB insert
+      const fakeId = randomUUID();
+      return { id: fakeId };
     }),
 });
 
