@@ -1,9 +1,13 @@
+import { cacheLife } from "next/cache";
 import Link from "next/link";
 import { type BundledLanguage, codeToHtml } from "shiki";
 import { LeaderboardRow } from "@/components/leaderboard-row";
 import { caller } from "@/trpc/server";
 
 export async function LeaderboardPreview() {
+  "use cache";
+  cacheLife("hours");
+
   const { entries, totalRoasts } = await caller.metrics({ limit: 3 });
 
   const rows = await Promise.all(

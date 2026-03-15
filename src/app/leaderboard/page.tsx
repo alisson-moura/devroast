@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cacheLife } from "next/cache";
 import { Suspense } from "react";
 import { type BundledLanguage, codeToHtml } from "shiki";
 import { LeaderboardRow } from "@/components/leaderboard-row";
@@ -28,6 +29,9 @@ export default function LeaderboardPage() {
 }
 
 async function LeaderboardContent() {
+  "use cache";
+  cacheLife("hours");
+
   const { entries, totalRoasts, avgScore } = await caller.leaderboard({
     limit: 20,
   });
@@ -196,25 +200,65 @@ async function LeaderboardContent() {
   );
 }
 
+function Bone({ className }: { className?: string }) {
+  return (
+    <div className={`animate-pulse rounded bg-surface ${className ?? ""}`} />
+  );
+}
+
 function LeaderboardSkeleton() {
   return (
     <>
-      <div className="flex flex-col gap-4">
+      {/* Hero skeleton */}
+      <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-3">
-          <h1 className="font-mono text-3xl font-bold md:text-4xl">
+          <h1 className="font-mono text-3xl font-bold md:text-4xl tracking-tight">
             <span className="text-critical">☠</span>
-            <span className="mx-3">HALL OF SHAME</span>
+            <span className="text-foreground mx-3">HALL OF SHAME</span>
             <span className="text-critical">☠</span>
+            <span className="animate-blink text-critical/30 ml-2">▌</span>
           </h1>
           <p className="font-mono text-sm text-muted">
-            {`// the most catastrophically bad code the internet has produced`}
+            {"// the most catastrophically bad code the internet has produced"}
           </p>
         </div>
-        <div className="flex gap-3">
-          <div className="h-7 w-36 animate-pulse rounded border border-surface bg-code-bg" />
-          <div className="h-7 w-36 animate-pulse rounded border border-surface bg-code-bg" />
+        <div className="flex items-center gap-3">
+          <Bone className="h-7 w-36" />
+          <Bone className="h-7 w-36" />
         </div>
       </div>
+
+      {/* Top 3 podium skeleton */}
+      <div className="flex flex-col gap-3">
+        <p className="font-mono text-xs text-subtle uppercase tracking-widest">
+          — top 3 worst offenders —
+        </p>
+        {(
+          [
+            { key: "p1", border: "border-critical/30" },
+            { key: "p2", border: "border-warning/20" },
+            { key: "p3", border: "border-surface" },
+          ] as const
+        ).map(({ key, border }) => (
+          <div
+            key={key}
+            className={`rounded-md border ${border} bg-code-bg px-4 py-3`}
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <Bone className="h-3 w-3 rounded-full" />
+              <Bone className="h-3 w-32" />
+            </div>
+            <div className="flex items-center gap-3 mb-2">
+              <Bone className="h-7 w-10" />
+              <Bone className="h-4 w-16" />
+            </div>
+            <Bone className="h-3 w-3/4 mb-1.5" />
+            <Bone className="h-3 w-24" />
+          </div>
+        ))}
+      </div>
+
+      {/* Table skeleton */}
       <div className="overflow-hidden rounded-md border border-surface">
         <div className="grid grid-cols-[3rem_5rem_1fr_7rem] border-b border-surface bg-code-bg px-4 py-2.5 font-mono text-xs font-medium text-muted">
           <span>#</span>
@@ -222,11 +266,30 @@ function LeaderboardSkeleton() {
           <span>roast</span>
           <span>lang</span>
         </div>
-        {["s1", "s2", "s3", "s4", "s5"].map((id) => (
+        {(
+          [
+            { key: "r1", w: "w-28" },
+            { key: "r2", w: "w-20" },
+            { key: "r3", w: "w-32" },
+            { key: "r4", w: "w-24" },
+            { key: "r5", w: "w-28" },
+            { key: "r6", w: "w-20" },
+            { key: "r7", w: "w-26" },
+            { key: "r8", w: "w-22" },
+          ] as const
+        ).map(({ key, w }) => (
           <div
-            key={id}
-            className="h-12 animate-pulse border-b border-surface bg-code-bg/50 last:border-0"
-          />
+            key={key}
+            className="grid grid-cols-[3rem_5rem_1fr_7rem] items-start border-b border-surface px-4 py-3 last:border-0"
+          >
+            <Bone className="mt-0.5 h-3 w-4" />
+            <Bone className="mt-0.5 h-5 w-10" />
+            <div className="flex flex-col gap-1.5">
+              <Bone className={`h-3 ${w}`} />
+              <Bone className="h-4 w-28" />
+            </div>
+            <Bone className="mt-0.5 h-5 w-16" />
+          </div>
         ))}
       </div>
     </>
