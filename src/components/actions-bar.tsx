@@ -1,11 +1,34 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AppSwitch } from "@/components/ui/switch";
+import { trpc } from "@/trpc/client";
 
-export function ActionsBar() {
-  const [roastMode, setRoastMode] = useState(false);
+const MAX_CHARS = 2000;
+
+type ActionsBarProps = {
+  code: string;
+  language: string | null;
+};
+
+export function ActionsBar({ code, language }: ActionsBarProps) {
+  const [roastMode, setRoastMode] = useState(true);
+  const router = useRouter();
+
+  const { mutate, isPending } = trpc.createRoast.useMutation({
+    onSuccess: ({ id }) => {
+      router.push(`/result/${id}`);
+    },
+  });
+
+  const isDisabled = !code.trim() || code.length > MAX_CHARS || isPending;
+
+  const handleSubmit = () => {
+    if (isDisabled) return;
+    mutate({ code, language, roastMode });
+  };
 
   return (
     <div className="flex items-center justify-between">
@@ -19,8 +42,13 @@ export function ActionsBar() {
           {"// maximum sarcasm enabled"}
         </span>
       </div>
-      <Button size="sm" variant="solid">
-        $ roast_my_code
+      <Button
+        size="sm"
+        variant="solid"
+        disabled={isDisabled}
+        onClick={handleSubmit}
+      >
+        {isPending ? "// roasting..." : "$ roast_my_code"}
       </Button>
     </div>
   );
