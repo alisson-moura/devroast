@@ -79,6 +79,40 @@ All reusable UI components live in `src/components/ui/`. The showcase page at `s
 ### Behavioral Components
 For interactive/behavioral primitives (Switch, Select, Dialog, Checkbox, etc.), always use `@base-ui/react` — never build custom implementations from scratch.
 
+## tRPC
+
+Arquivos de referência: [`src/trpc/`](src/trpc/)
+
+| Arquivo | Responsabilidade |
+|---|---|
+| `src/trpc/init.ts` | `createTRPCContext`, `baseProcedure`, `createCallerFactory` |
+| `src/trpc/routers/_app.ts` | `appRouter` — adicione procedures aqui |
+| `src/trpc/server.ts` | `caller`, `trpc`, `HydrateClient` — use em Server Components |
+| `src/trpc/client.tsx` | `trpc` (hooks), `TRPCProvider` — use em Client Components |
+
+### Server Component
+
+```tsx
+import { caller, HydrateClient, trpc } from "@/trpc/server";
+
+export default async function Page() {
+  void trpc.myProcedure.prefetch(); // hidrata o cache para o client
+  const data = await caller.myProcedure(); // busca direto no servidor
+  return <HydrateClient>...</HydrateClient>;
+}
+```
+
+### Client Component
+
+```tsx
+"use client";
+import { trpc } from "@/trpc/client";
+
+export function MyComponent() {
+  const { data } = trpc.myProcedure.useQuery();
+}
+```
+
 ### Navigation Links
 Always use the `<Link>` component from `next/link` for internal navigation — never use a raw `<a>` tag for internal routes. `Link` provides automatic prefetching and client-side navigation.
 

@@ -1,44 +1,13 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { HomeEditor } from "@/components/home-editor";
-import {
-  MetricsHint,
-  MetricsLeaderboardFooter,
-} from "@/components/metrics-stats";
-import { Badge } from "@/components/ui/badge";
+import { LeaderboardPreview } from "@/components/leaderboard-preview";
+import { LeaderboardPreviewSkeleton } from "@/components/leaderboard-preview-skeleton";
+import { MetricsHint } from "@/components/metrics-stats";
 import { HydrateClient, trpc } from "@/trpc/server";
 
-const LEADERBOARD = [
-  {
-    rank: 1,
-    score: "1.2",
-    snippet: [
-      'eval(prompt("enter code"))',
-      "document.write(response)",
-      "// trust the user lol",
-    ],
-    lang: "javascript",
-  },
-  {
-    rank: 2,
-    score: "1.8",
-    snippet: [
-      "if (x == true) { return true; }",
-      "else if (x == false) { return false; }",
-      "else { return !false; }",
-    ],
-    lang: "typescript",
-  },
-  {
-    rank: 3,
-    score: "2.1",
-    snippet: ["SELECT * FROM users WHERE 1=1", "-- TODO: add authentication"],
-    lang: "sql",
-  },
-];
-
 export default async function Home() {
-  void trpc.metrics.prefetch();
+  void trpc.metrics.prefetch({ limit: 0 });
 
   return (
     <HydrateClient>
@@ -87,53 +56,8 @@ export default async function Home() {
             <p className="font-mono text-xs text-muted">
               {"// the worst code on the internet, ranked by shame"}
             </p>
-            <div className="overflow-hidden rounded-md border border-surface">
-              <table className="w-full font-mono text-sm">
-                <thead>
-                  <tr className="border-b border-surface bg-code-bg text-muted text-xs">
-                    <th className="px-4 py-2.5 text-left font-medium w-12">
-                      #
-                    </th>
-                    <th className="px-4 py-2.5 text-left font-medium w-20">
-                      score
-                    </th>
-                    <th className="px-4 py-2.5 text-left font-medium">
-                      snippet
-                    </th>
-                    <th className="px-4 py-2.5 text-left font-medium w-28">
-                      lang
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {LEADERBOARD.map((entry) => (
-                    <tr
-                      key={entry.rank}
-                      className="border-b border-surface last:border-0 hover:bg-surface/30 transition-colors"
-                    >
-                      <td className="px-4 py-3 text-muted">{entry.rank}</td>
-                      <td className="px-4 py-3">
-                        <Badge variant="critical">{entry.score}</Badge>
-                      </td>
-                      <td className="px-4 py-3 text-subtle">
-                        {entry.snippet.map((line) => (
-                          <div key={line}>{line}</div>
-                        ))}
-                      </td>
-                      <td className="px-4 py-3 text-muted">{entry.lang}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <Suspense
-              fallback={
-                <p className="font-mono text-xs text-muted text-center">
-                  <span className="inline-block h-3 w-56 rounded bg-surface animate-pulse" />
-                </p>
-              }
-            >
-              <MetricsLeaderboardFooter />
+            <Suspense fallback={<LeaderboardPreviewSkeleton />}>
+              <LeaderboardPreview />
             </Suspense>
           </section>
         </div>
