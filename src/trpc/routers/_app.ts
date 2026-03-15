@@ -1,9 +1,33 @@
-import { randomUUID } from "node:crypto";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { generateObject } from "ai";
 import { avg, count, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
-import { roasts } from "@/db/schema";
+import { analysisItems, roasts } from "@/db/schema";
 import { baseProcedure, createTRPCRouter } from "@/trpc/init";
+
+const roastOutputSchema = z.object({
+  score: z.number().min(0).max(10),
+  verdict: z.enum([
+    "needs_serious_help",
+    "rough_around_edges",
+    "decent_code",
+    "solid_work",
+    "exceptional",
+  ]),
+  roastQuote: z.string().nullable(),
+  suggestedFix: z.string().nullable(),
+  analysisItems: z
+    .array(
+      z.object({
+        severity: z.enum(["critical", "warning", "good"]),
+        title: z.string().max(200),
+        description: z.string(),
+      }),
+    )
+    .min(2)
+    .max(8),
+});
 
 export const appRouter = createTRPCRouter({
   leaderboard: baseProcedure
@@ -67,17 +91,66 @@ export const appRouter = createTRPCRouter({
     .input(
       z.object({
         code: z.string().min(1).max(2000),
-        language: z.string().nullable(),
+        language: z.string().min(1),
         roastMode: z.boolean(),
       }),
     )
-    .mutation(async ({ input: data }) => {
-      // TODO: replace with real AI analysis + DB insert
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      const fakeId = randomUUID();
+    .mutation(async ({ input }) => {
+      const lineCount = input.code.split("\n").length;
 
-      console.log(data);
-      return { id: fakeId };
+      const google = createGoogleGenerativeAI();
+
+      const modeInstruction = input.roastMode
+        ? "Modo: sarcasmo máximo, sem filtros, pode ofender, linguagem informal, humilhe o código e implicitamente quem o escreveu. Sem suavizações."
+        : "Modo: construtivo, técnico, direto, sem julgamentos pessoais.";
+
+      const { object } = await generateObject({
+        model: google("gemini-2.0-flash"),
+        schema: roastOutputSchema,
+        system: `Você é um revisor de código experiente e impiedoso. Sempre responda em pt-br.
+Analise o código submetido considerando qualidade, estilo, corretude e boas práticas.
+Dê uma nota de 0 a 10 baseada na tabela:
+- 0–2: needs_serious_help
+- 3–4: rough_around_edges
+- 5–6: decent_code
+- 7–8: solid_work
+- 9–10: exceptional
+Inclua 2–8 analysisItems cobrindo problemas críticos, avisos e pontos positivos.
+Inclua um roastQuote (resumo de uma linha).
+Para suggestedFix: formate como diff simplificado — cada linha começa com '+' (adicionada), '-' (removida) ou ' ' (contexto). Sem cabeçalhos @@ ou --- +++. Retorne null se o código não precisar de fix ou for muito curto.
+${modeInstruction}`,
+        prompt: `Linguagem: ${input.language}\n\nCódigo:\n${input.code}`,
+      });
+
+      const [inserted] = await db
+        .insert(roasts)
+        .values({
+          code: input.code,
+          language: input.language,
+          lineCount,
+          roastMode: input.roastMode,
+          score: object.score,
+          verdict: object.verdict,
+          roastQuote: object.roastQuote,
+          suggestedFix: object.suggestedFix,
+        })
+        .returning({ id: roasts.id });
+
+      if (!inserted) {
+        throw new Error("Failed to insert roast");
+      }
+
+      await db.insert(analysisItems).values(
+        object.analysisItems.map((item, i) => ({
+          roastId: inserted.id,
+          severity: item.severity,
+          title: item.title,
+          description: item.description,
+          order: i,
+        })),
+      );
+
+      return { id: inserted.id };
     }),
 });
 
