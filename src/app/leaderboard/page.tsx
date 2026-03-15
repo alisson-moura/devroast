@@ -32,7 +32,7 @@ async function LeaderboardContent() {
   "use cache";
   cacheLife("hours");
 
-  const { entries, totalRoasts, avgScore } = await caller.leaderboard({
+  const { entries, totalRoasts, avgScore } = await caller.leaderboard.list({
     limit: 20,
   });
 

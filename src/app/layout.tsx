@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, JetBrains_Mono } from "next/font/google";
+import { Toaster } from "sonner";
 import { Navbar } from "@/components/ui/navbar";
 import { TRPCProvider } from "@/trpc/client";
 import "./globals.css";
@@ -34,6 +35,7 @@ export default function RootLayout({
         <TRPCProvider>
           <Navbar />
           {children}
+          <Toaster position="bottom-right" theme="dark" />
         </TRPCProvider>
       </body>
     </html>

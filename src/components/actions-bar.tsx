@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { AppSwitch } from "@/components/ui/switch";
 import { trpc } from "@/trpc/client";
@@ -17,9 +18,16 @@ export function ActionsBar({ code, language }: ActionsBarProps) {
   const [roastMode, setRoastMode] = useState(true);
   const router = useRouter();
 
-  const { mutate, isPending } = trpc.createRoast.useMutation({
+  const { mutate, isPending } = trpc.roast.create.useMutation({
     onSuccess: ({ id }) => {
       router.push(`/result/${id}`);
+    },
+    onError: () => {
+      toast.error("// deploy na sexta foi ótima ideia, hein?", {
+        description:
+          "Algo quebrou feio por aqui. O dev responsável já foi promovido pra estagiário. Tenta de novo mais tarde.",
+        duration: 6000,
+      });
     },
   });
 

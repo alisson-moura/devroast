@@ -8,7 +8,7 @@ export async function LeaderboardPreview() {
   "use cache";
   cacheLife("hours");
 
-  const { entries, totalRoasts } = await caller.metrics({ limit: 3 });
+  const { entries, totalRoasts } = await caller.metrics.summary({ limit: 3 });
 
   const rows = await Promise.all(
     entries.map(async (entry, i) => {

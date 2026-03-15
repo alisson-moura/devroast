@@ -4,7 +4,7 @@ import Link from "next/link";
 import { trpc } from "@/trpc/client";
 
 export function MetricsHint() {
-  const [metrics] = trpc.metrics.useSuspenseQuery({ limit: 0 });
+  const [metrics] = trpc.metrics.summary.useSuspenseQuery({ limit: 0 });
 
   return (
     <p className="font-mono text-xs text-muted text-center">
@@ -15,7 +15,7 @@ export function MetricsHint() {
 }
 
 export function MetricsLeaderboardFooter() {
-  const [metrics] = trpc.metrics.useSuspenseQuery({ limit: 0 });
+  const [metrics] = trpc.metrics.summary.useSuspenseQuery({ limit: 0 });
 
   return (
     <p className="font-mono text-xs text-muted text-center">
