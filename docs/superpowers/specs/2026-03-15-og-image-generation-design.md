@@ -19,12 +19,16 @@ Pencil design: Node ID `4J5QT` ("Screen 4 - OG Image") in `designs/forms.pen`.
 - **Method**: GET
 - **Input**: Roast UUID from URL param
 - **Flow**:
-  1. Validate `id` is a valid UUID format → 400 if not
-  2. Fetch roast data via `caller.roast.getById(id)` → 404 if not found
-  3. Render JSX component with Takumi's `ImageResponse`
-  4. Return PNG 1200×630
+  1. Call `caller.roast.getById({ id })` wrapped in try/catch
+  2. Zod validates UUID format inside the tRPC procedure — catch `TRPCError` with code `BAD_REQUEST` → return 400
+  3. If result is null → return 404
+  4. Render JSX component with Takumi's `ImageResponse`
+  5. Return PNG 1200×630
+- **Error handling**: Catch `TRPCError` from caller and map to HTTP status codes:
+  - `BAD_REQUEST` (Zod UUID validation) → 400
+  - Not found → 404
+  - Any other error → 500
 - **Cache**: `Cache-Control: public, max-age=31536000, immutable` (roast data is immutable after creation)
-- **Error responses**: 400 (invalid ID), 404 (not found), 500 (render failure)
 
 ### Updated Metadata: `src/app/result/[id]/page.tsx`
 
@@ -40,7 +44,7 @@ Add `serverExternalPackages: ["@takumi-rs/core"]` for Takumi's native Rust binar
 
 ### Layout
 
-Vertical flex, centered, on `#0A0A0A` background. All text in Geist Mono (embedded in Takumi, no font files needed).
+Vertical flex, centered, on `#0A0A0A` background. All text in Geist Mono (Takumi embeds Geist and Geist Mono fonts with full weight range 100-900, no font files needed).
 
 ```
 ┌────────────────────────────────────┐
@@ -60,11 +64,11 @@ Vertical flex, centered, on `#0A0A0A` background. All text in Geist Mono (embedd
 
 | Element | Source Field | Styling |
 |---------|-------------|---------|
-| Score number | `roast.score` | 160px, bold 900, amber `#F59E0B` |
+| Score number | `roast.score` | 160px, bold 900, amber `#F59E0B`, formatted with `toFixed(1)` (e.g., `3.0` not `3`) |
 | Score denominator | — | 56px, normal, gray `#4B5563` |
 | Verdict dot + text | `roast.verdict` | Color mapped by verdict (see below) |
 | Language info | `roast.language` + `roast.lineCount` | 16px, gray `#4B5563` |
-| Roast quote | `roast.roastQuote` | 22px, white `#FAFAFA`, truncated at ~120 chars |
+| Roast quote | `roast.roastQuote` | 22px, white `#FAFAFA`, truncated at 120 chars with "..." |
 
 ### Verdict Color Map
 
