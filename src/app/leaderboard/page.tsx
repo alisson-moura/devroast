@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import type { BundledLanguage } from "shiki";
-import { CodeBlock } from "@/components/ui/code-block";
+import { Suspense } from "react";
+import { type BundledLanguage, codeToHtml } from "shiki";
+import { LeaderboardRow } from "@/components/leaderboard-row";
+import { caller } from "@/trpc/server";
 
 export const metadata: Metadata = {
   title: "Shame Leaderboard | devroast",
-  description:
-    "The most roasted code on the internet. 2,847 submissions of terrible code, ranked by shame score.",
+  description: "The most roasted code on the internet. Ranked by shame score.",
   openGraph: {
     title: "Shame Leaderboard | devroast",
     description:
@@ -14,110 +15,220 @@ export const metadata: Metadata = {
   },
 };
 
-type LeaderboardEntry = {
-  rank: number;
-  score: number;
-  lang: BundledLanguage;
-  lines: number;
-  code: string;
-};
-
-const entries: LeaderboardEntry[] = [
-  {
-    rank: 1,
-    score: 1.2,
-    lang: "javascript",
-    lines: 3,
-    code: `eval(prompt("enter code"))\ndocument.write(response)\n// trust the user lol`,
-  },
-  {
-    rank: 2,
-    score: 1.8,
-    lang: "typescript",
-    lines: 3,
-    code: `if (x == true) { return true; }\nelse if (x == false) { return false; }\nelse { return !false; }`,
-  },
-  {
-    rank: 3,
-    score: 2.1,
-    lang: "sql",
-    lines: 2,
-    code: `SELECT * FROM users WHERE 1=1\n-- TODO: add authentication`,
-  },
-  {
-    rank: 4,
-    score: 2.3,
-    lang: "java",
-    lines: 3,
-    code: `catch (e) {\n  // ignore\n}`,
-  },
-  {
-    rank: 5,
-    score: 2.6,
-    lang: "javascript",
-    lines: 3,
-    code: `const sleep = (ms) =>\n  new Date(Date.now() + ms)\n  while(new Date() < end) {}`,
-  },
-];
-
 export default function LeaderboardPage() {
   return (
     <main className="flex-1 px-10 py-10 md:px-20">
       <div className="mx-auto flex max-w-3xl flex-col gap-10">
-        {/* Hero */}
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-3">
-            <h1 className="flex items-center gap-3 font-mono text-2xl font-bold md:text-3xl">
-              <span className="text-accent">&gt;</span>
-              <span>shame_leaderboard</span>
-            </h1>
-            <p className="font-mono text-sm text-muted">
-              {`// the most roasted code on the internet`}
-            </p>
-          </div>
-          <div className="flex items-center gap-2 font-mono text-xs text-subtle">
-            <span>2,847 submissions</span>
-            <span>·</span>
-            <span>avg score: 4.2/10</span>
-          </div>
-        </div>
-
-        {/* Entries */}
-        <div className="flex flex-col gap-5">
-          {entries.map((entry) => (
-            <Entry key={entry.rank} entry={entry} />
-          ))}
-        </div>
+        <Suspense fallback={<LeaderboardSkeleton />}>
+          <LeaderboardContent />
+        </Suspense>
       </div>
     </main>
   );
 }
 
-async function Entry({ entry }: { entry: LeaderboardEntry }) {
+async function LeaderboardContent() {
+  const { entries, totalRoasts, avgScore } = await caller.leaderboard({
+    limit: 20,
+  });
+
+  const rows = await Promise.all(
+    entries.map(async (entry, i) => {
+      const lang = entry.language as BundledLanguage;
+      const html = await codeToHtml(entry.code, {
+        lang,
+        theme: "vesper",
+      }).catch(() => codeToHtml(entry.code, { lang: "text", theme: "vesper" }));
+      return { ...entry, rank: i + 1, html };
+    }),
+  );
+
+  const top3 = rows.slice(0, 3);
+
   return (
-    <div className="overflow-hidden rounded-md border border-surface">
-      {/* Meta row */}
-      <div className="flex h-12 items-center justify-between border-b border-surface px-5">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5 font-mono text-sm">
-            <span className="text-subtle">#</span>
-            <span className="font-bold text-warning">{entry.rank}</span>
-          </div>
-          <div className="flex items-center gap-1.5 font-mono text-xs">
-            <span className="text-subtle">score:</span>
-            <span className="font-bold text-critical">{entry.score}</span>
-          </div>
+    <>
+      {/* Hero */}
+      <div className="relative flex flex-col gap-6">
+        {/* CRT scanline overlay */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-md"
+          style={{
+            background:
+              "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px)",
+            zIndex: 1,
+          }}
+        />
+
+        <div className="flex flex-col gap-3 relative z-10">
+          <h1
+            className="animate-flicker font-mono text-3xl font-bold md:text-4xl tracking-tight"
+            style={{
+              textShadow:
+                "0 0 20px rgba(239,68,68,0.7), 0 0 40px rgba(239,68,68,0.3)",
+            }}
+          >
+            <span className="text-critical">☠</span>
+            <span className="text-foreground mx-3">HALL OF SHAME</span>
+            <span className="text-critical">☠</span>
+            <span className="animate-blink text-critical ml-2">▌</span>
+          </h1>
+          <p className="font-mono text-sm text-muted">
+            {`// the most catastrophically bad code the internet has produced`}
+          </p>
         </div>
-        <div className="flex items-center gap-3 font-mono text-xs">
-          <span className="text-muted">{entry.lang}</span>
-          <span className="text-subtle">{entry.lines} lines</span>
+
+        <div className="flex items-center gap-3 font-mono text-xs relative z-10">
+          <span className="px-3 py-1.5 rounded border border-surface bg-code-bg text-muted">
+            <span className="text-accent">[</span>
+            <span className="mx-1">
+              {totalRoasts.toLocaleString()} submissions
+            </span>
+            <span className="text-accent">]</span>
+          </span>
+          <span className="px-3 py-1.5 rounded border border-surface bg-code-bg text-muted">
+            <span className="text-warning">[</span>
+            <span className="mx-1">avg score: {avgScore}/10</span>
+            <span className="text-warning">]</span>
+          </span>
         </div>
       </div>
 
-      {/* Code block — no terminal header, the meta row replaces it */}
-      <CodeBlock className="rounded-none border-0">
-        <CodeBlock.Content code={entry.code} lang={entry.lang} />
-      </CodeBlock>
-    </div>
+      {/* Top 3 Podium of Shame */}
+      {top3.length > 0 && (
+        <div className="flex flex-col gap-3">
+          <p className="font-mono text-xs text-subtle uppercase tracking-widest">
+            — top 3 worst offenders —
+          </p>
+          {top3.map((row, i) => {
+            const podiumConfig = [
+              {
+                emoji: "☠",
+                label: "#1 MOST SHAMEFUL",
+                borderClass: "border-critical/60 animate-glow-pulse",
+                rankClass: "text-critical",
+              },
+              {
+                emoji: "🔥",
+                label: "#2 SPECTACULAR FAILURE",
+                borderClass: "border-warning/50",
+                rankClass: "text-warning",
+              },
+              {
+                emoji: "💀",
+                label: "#3 HALL OF SHAME",
+                borderClass: "border-surface",
+                rankClass: "text-muted",
+              },
+            ][i];
+
+            return (
+              <div
+                key={row.id}
+                className={`rounded-md border ${podiumConfig.borderClass} bg-code-bg px-4 py-3 font-mono`}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-base">{podiumConfig.emoji}</span>
+                  <span
+                    className={`text-xs font-bold uppercase tracking-widest ${podiumConfig.rankClass}`}
+                  >
+                    {podiumConfig.label}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <span
+                    className={`text-2xl font-bold ${podiumConfig.rankClass}`}
+                  >
+                    {row.score.toFixed(1)}
+                  </span>
+                  <span className="text-subtle text-xs">/10</span>
+                  <span className="px-2 py-0.5 rounded border border-surface text-muted bg-background text-xs">
+                    {row.language}
+                  </span>
+                </div>
+                {row.roastQuote && (
+                  <p className="mt-2 text-xs text-critical/80 italic leading-snug line-clamp-2">
+                    &ldquo;{row.roastQuote}&rdquo;
+                  </p>
+                )}
+                <p className="mt-1 text-xs text-muted capitalize">
+                  {row.verdict.replace(/_/g, " ")}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Table */}
+      <div className="overflow-hidden rounded-md border border-surface">
+        {/* Header */}
+        <div className="grid grid-cols-[3rem_5rem_1fr_7rem] border-b border-surface bg-code-bg px-4 py-2.5 font-mono text-xs font-medium text-muted">
+          <span>#</span>
+          <span>score</span>
+          <span>roast</span>
+          <span>lang</span>
+        </div>
+        {rows.length === 0 && (
+          <div className="px-4 py-6 text-center font-mono text-xs text-muted">
+            no roasts yet — be the first
+          </div>
+        )}
+        {rows.map((row, i) => (
+          <div
+            key={row.id}
+            className="animate-fade-up"
+            style={{ animationDelay: `${i * 50}ms` }}
+          >
+            <LeaderboardRow
+              rank={row.rank}
+              score={row.score.toFixed(1)}
+              language={row.language}
+              verdict={row.verdict}
+              roastQuote={row.roastQuote ?? null}
+              suggestedFix={row.suggestedFix ?? null}
+              highlightedHtml={row.html}
+            />
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+function LeaderboardSkeleton() {
+  return (
+    <>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
+          <h1 className="font-mono text-3xl font-bold md:text-4xl">
+            <span className="text-critical">☠</span>
+            <span className="mx-3">HALL OF SHAME</span>
+            <span className="text-critical">☠</span>
+          </h1>
+          <p className="font-mono text-sm text-muted">
+            {`// the most catastrophically bad code the internet has produced`}
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <div className="h-7 w-36 animate-pulse rounded border border-surface bg-code-bg" />
+          <div className="h-7 w-36 animate-pulse rounded border border-surface bg-code-bg" />
+        </div>
+      </div>
+      <div className="overflow-hidden rounded-md border border-surface">
+        <div className="grid grid-cols-[3rem_5rem_1fr_7rem] border-b border-surface bg-code-bg px-4 py-2.5 font-mono text-xs font-medium text-muted">
+          <span>#</span>
+          <span>score</span>
+          <span>roast</span>
+          <span>lang</span>
+        </div>
+        {["s1", "s2", "s3", "s4", "s5"].map((id) => (
+          <div
+            key={id}
+            className="h-12 animate-pulse border-b border-surface bg-code-bg/50 last:border-0"
+          />
+        ))}
+      </div>
+    </>
   );
 }

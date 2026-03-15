@@ -37,3 +37,48 @@ body {
 .animate-fade-up {
   animation: fade-up 0.5s ease both;
 }
+
+@keyframes glow-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 4px rgba(239, 68, 68, 0.5);
+  }
+  50% {
+    box-shadow:
+      0 0 20px rgba(239, 68, 68, 0.4),
+      0 0 40px rgba(239, 68, 68, 0.2);
+  }
+}
+.animate-glow-pulse {
+  animation: glow-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes flicker {
+  0%,
+  94%,
+  100% {
+    opacity: 1;
+  }
+  95% {
+    opacity: 0.3;
+  }
+  97% {
+    opacity: 0.9;
+  }
+}
+.animate-flicker {
+  animation: flicker 5s infinite;
+}
+
+@keyframes blink-cursor {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+.animate-blink {
+  animation: blink-cursor 1s step-end infinite;
+}

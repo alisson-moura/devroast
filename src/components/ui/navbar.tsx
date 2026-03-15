@@ -10,9 +10,10 @@ export function Navbar() {
         </Link>
         <Link
           href="/leaderboard"
-          className="font-mono text-sm text-muted hover:text-foreground transition-colors"
+          className="animate-flicker font-mono text-sm text-critical hover:text-critical/80 transition-colors"
+          style={{ textShadow: "0 0 8px rgba(239,68,68,0.5)" }}
         >
-          leaderboard
+          hall_of_shame
         </Link>
       </div>
     </nav>
