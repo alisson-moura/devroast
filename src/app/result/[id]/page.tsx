@@ -6,6 +6,7 @@ import type { BundledLanguage } from "shiki";
 import { AnalysisCard } from "@/components/ui/analysis-card";
 import { Badge } from "@/components/ui/badge";
 import { CodeBlock } from "@/components/ui/code-block";
+import { SharePopover } from "@/components/ui/share-popover";
 import { caller } from "@/trpc/server";
 
 async function fetchResult(id: string) {
@@ -95,13 +96,11 @@ async function ResultContent({ params }: { params: Promise<{ id: string }> }) {
           </div>
 
           <div>
-            <button
-              type="button"
-              disabled
-              className="border border-surface px-4 py-2 font-mono text-xs text-foreground opacity-40 cursor-not-allowed"
-            >
-              $ share_roast
-            </button>
+            <SharePopover
+              roastId={id}
+              score={result.score}
+              verdict={result.verdict}
+            />
           </div>
         </div>
       </section>
