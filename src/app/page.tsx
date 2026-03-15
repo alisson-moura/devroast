@@ -4,11 +4,9 @@ import { HomeEditor } from "@/components/home-editor";
 import { LeaderboardPreview } from "@/components/leaderboard-preview";
 import { LeaderboardPreviewSkeleton } from "@/components/leaderboard-preview-skeleton";
 import { MetricsHint } from "@/components/metrics-stats";
-import { HydrateClient, trpc } from "@/trpc/server";
+import { HydrateClient } from "@/trpc/server";
 
-export default async function Home() {
-  void trpc.metrics.prefetch({ limit: 0 });
-
+export default function Home() {
   return (
     <HydrateClient>
       <main className="flex flex-col bg-background flex-1">

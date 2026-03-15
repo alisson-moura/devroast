@@ -66,13 +66,7 @@ const ISSUES: Array<{
   },
 ];
 
-export default async function ResultPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id: _id } = await params;
-
+export default function ResultPage() {
   return (
     <main className="flex-1 px-10 py-10">
       <div className="mx-auto w-full max-w-[960px] flex flex-col gap-10">

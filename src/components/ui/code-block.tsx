@@ -46,6 +46,7 @@ function Header({ className, filename, children, ...props }: HeaderProps) {
 }
 
 async function Content({ code, lang, className }: ContentProps) {
+  "use cache";
   const html = await codeToHtml(code, { lang, theme: "vesper" });
   return (
     <div
