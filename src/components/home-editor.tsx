@@ -21,7 +21,7 @@ export function HomeEditor() {
         onLanguageChange={setManualLanguage}
         className="w-full max-w-3xl mx-auto"
       />
-      <ActionsBar />
+      <ActionsBar code={code} language={resolvedLanguage} />
     </>
   );
 }
