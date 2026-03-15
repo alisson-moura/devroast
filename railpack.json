@@ -6,6 +6,6 @@
   },
   "secrets": ["DATABASE_URL"],
   "deploy": {
-    "startCommand": "./start.sh"
+    "startCommand": "node .next/standalone/server.js"
   }
 }
