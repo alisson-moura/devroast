@@ -71,9 +71,12 @@ export const appRouter = createTRPCRouter({
         roastMode: z.boolean(),
       }),
     )
-    .mutation(async ({ input: _input }) => {
+    .mutation(async ({ input: data }) => {
       // TODO: replace with real AI analysis + DB insert
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       const fakeId = randomUUID();
+
+      console.log(data);
       return { id: fakeId };
     }),
 });

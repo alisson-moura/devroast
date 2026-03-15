@@ -23,7 +23,8 @@ export function ActionsBar({ code, language }: ActionsBarProps) {
     },
   });
 
-  const isDisabled = !code.trim() || code.length > MAX_CHARS || isPending;
+  const isDisabled =
+    !code.trim() || code.length > MAX_CHARS || !language || isPending;
 
   const handleSubmit = () => {
     if (isDisabled) return;
@@ -47,8 +48,11 @@ export function ActionsBar({ code, language }: ActionsBarProps) {
         variant="solid"
         disabled={isDisabled}
         onClick={handleSubmit}
+        className="w-36 justify-center transition-all duration-300"
       >
-        {isPending ? "// roasting..." : "$ roast_my_code"}
+        <span className="transition-opacity duration-300">
+          {isPending ? "// roasting..." : "$ roast_my_code"}
+        </span>
       </Button>
     </div>
   );
