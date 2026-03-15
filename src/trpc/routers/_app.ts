@@ -1,4 +1,4 @@
-import { asc, avg, count } from "drizzle-orm";
+import { avg, count, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import { roasts } from "@/db/schema";
@@ -20,9 +20,12 @@ export const appRouter = createTRPCRouter({
                 code: roasts.code,
                 language: roasts.language,
                 score: roasts.score,
+                verdict: roasts.verdict,
+                roastQuote: roasts.roastQuote,
+                suggestedFix: roasts.suggestedFix,
               })
               .from(roasts)
-              .orderBy(asc(roasts.score))
+              .orderBy(sql`RANDOM()`)
               .limit(input.limit)
           : [];
 
