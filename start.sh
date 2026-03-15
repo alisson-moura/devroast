@@ -1,4 +1,4 @@
 #!/bin/sh
 set -e
 node migrate.mjs
-exec node_modules/.bin/next start
+exec node .next/standalone/server.js

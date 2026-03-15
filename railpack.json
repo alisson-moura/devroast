@@ -4,6 +4,7 @@
   "packages": {
     "node": "24.12.0"
   },
+  "secrets": ["DATABASE_URL"],
   "deploy": {
     "startCommand": "./start.sh"
   }
