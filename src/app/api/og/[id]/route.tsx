@@ -28,9 +28,6 @@ export async function GET(
     if (error instanceof TRPCError && error.code === "BAD_REQUEST") {
       return new Response("Invalid ID", { status: 400 });
     }
-    if (error instanceof TRPCError && error.code === "NOT_FOUND") {
-      return new Response("Not Found", { status: 404 });
-    }
     console.error("[og] Failed to fetch roast", { id, error });
     return new Response("Internal Server Error", { status: 500 });
   }
