@@ -48,7 +48,7 @@ export function ActionsBar({ code, language }: ActionsBarProps) {
         variant="solid"
         disabled={isDisabled}
         onClick={handleSubmit}
-        className="w-36 justify-center transition-all duration-300"
+        className="min-w-36 whitespace-nowrap justify-center transition-all duration-300"
       >
         <span className="transition-opacity duration-300">
           {isPending ? "// roasting..." : "$ roast_my_code"}
