@@ -140,15 +140,20 @@ ${modeInstruction}`,
         throw new Error("Failed to insert roast");
       }
 
-      await db.insert(analysisItems).values(
-        object.analysisItems.map((item, i) => ({
-          roastId: inserted.id,
-          severity: item.severity,
-          title: item.title,
-          description: item.description,
-          order: i,
-        })),
-      );
+      try {
+        await db.insert(analysisItems).values(
+          object.analysisItems.map((item, i) => ({
+            roastId: inserted.id,
+            severity: item.severity,
+            title: item.title,
+            description: item.description,
+            order: i,
+          })),
+        );
+      } catch {
+        // analysisItems insert failed — roast row already committed, return id anyway
+        console.error("Failed to insert analysisItems for roast", inserted.id);
+      }
 
       return { id: inserted.id };
     }),
