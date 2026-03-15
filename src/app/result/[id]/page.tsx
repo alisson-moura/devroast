@@ -31,6 +31,13 @@ export async function generateMetadata({
       title: "Roast Results | devroast",
       description: quote,
       type: "website",
+      images: [`/api/og/${id}`],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Roast Results | devroast",
+      description: quote,
+      images: [`/api/og/${id}`],
     },
   };
 }
