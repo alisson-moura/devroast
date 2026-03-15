@@ -6,6 +6,8 @@ import { db } from "@/db";
 import { analysisItems, roasts } from "@/db/schema";
 import { baseProcedure, createTRPCRouter } from "@/trpc/init";
 
+const google = createGoogleGenerativeAI();
+
 const roastOutputSchema = z.object({
   score: z.number().min(0).max(10),
   verdict: z.enum([
@@ -91,14 +93,12 @@ export const appRouter = createTRPCRouter({
     .input(
       z.object({
         code: z.string().min(1).max(2000),
-        language: z.string().min(1),
+        language: z.string().min(1).max(50),
         roastMode: z.boolean(),
       }),
     )
     .mutation(async ({ input }) => {
       const lineCount = input.code.split("\n").length;
-
-      const google = createGoogleGenerativeAI();
 
       const modeInstruction = input.roastMode
         ? "Modo: sarcasmo máximo, sem filtros, pode ofender, linguagem informal, humilhe o código e implicitamente quem o escreveu. Sem suavizações."
