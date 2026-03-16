@@ -4,6 +4,8 @@ import { migrate } from "drizzle-orm/node-postgres/migrator";
 
 const databaseUrl = process.env.DATABASE_URL;
 
+console.log("Database URL:", databaseUrl);
+
 if (!databaseUrl) {
   console.error("DATABASE_URL is not set");
   process.exit(1);
